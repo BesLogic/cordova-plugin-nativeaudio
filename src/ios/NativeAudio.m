@@ -199,8 +199,8 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
 
 - (void) play:(CDVInvokedUrlCommand *)command
 {
-    [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-        backgroundTaskId = UIBackgroundTaskInvalid;
+    backgroundTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+
     }];
     NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
@@ -293,6 +293,9 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
 
 - (void) loop:(CDVInvokedUrlCommand *)command
 {
+    backgroundTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+
+    }];
 
     NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
