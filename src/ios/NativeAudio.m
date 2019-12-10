@@ -25,6 +25,8 @@ NSString* INFO_PLAYBACK_STOP = @"(NATIVE AUDIO) Stop";
 NSString* INFO_PLAYBACK_LOOP = @"(NATIVE AUDIO) Loop.";
 NSString* INFO_VOLUME_CHANGED = @"(NATIVE AUDIO) Volume changed.";
 
+static UIBackgroundTaskIdentifier backgroundTaskId;
+
 - (void)pluginInitialize
 {
     self.fadeMusic = NO;
@@ -197,6 +199,9 @@ NSString* INFO_VOLUME_CHANGED = @"(NATIVE AUDIO) Volume changed.";
 
 - (void) play:(CDVInvokedUrlCommand *)command
 {
+    [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+        backgroundTaskId = UIBackgroundTaskInvalid;
+    }];
     NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
     NSString *audioID = [arguments objectAtIndex:0];
@@ -247,6 +252,10 @@ NSString* INFO_VOLUME_CHANGED = @"(NATIVE AUDIO) Volume changed.";
     NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
     NSString *audioID = [arguments objectAtIndex:0];
+
+    if (backgroundTaskId) {
+        [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskId];
+    }
 
     if ( audioMapping ) {
         NSObject* asset = audioMapping[audioID];
