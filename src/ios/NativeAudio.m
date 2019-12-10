@@ -174,15 +174,22 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
             NSString* path = [NSString stringWithFormat:@"%@/%@", basePath, assetPath];
 
             if ([[NSFileManager defaultManager] fileExistsAtPath : path]) {
+                NSError *error = NULL;
                 NativeAudioAsset* asset = [[NativeAudioAsset alloc] initWithPath:path
                                                                       withVoices:voices
                                                                       withVolume:volume
-                                                                   withFadeDelay:delay];
+                                                                   withFadeDelay:delay
+                                                                   error:&error];
+                if (error) {
+                    NSString *RESULT = [NSString stringWithFormat:@"%@ (%@)", ERROR_ASSETPATH_INCORRECT, error];
+                    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: RESULT] callbackId:callbackId];
+                } else {
 
-                audioMapping[audioID] = asset;
+                    audioMapping[audioID] = asset;
 
-                NSString *RESULT = [NSString stringWithFormat:@"%@ (%@)", INFO_ASSET_LOADED, audioID];
-                [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString: RESULT] callbackId:callbackId];
+                    NSString *RESULT = [NSString stringWithFormat:@"%@ (%@)", INFO_ASSET_LOADED, audioID];
+                    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString: RESULT] callbackId:callbackId];
+                }
 
             } else {
                 NSString *RESULT = [NSString stringWithFormat:@"%@ (%@)", ERROR_ASSETPATH_INCORRECT, assetPath];
