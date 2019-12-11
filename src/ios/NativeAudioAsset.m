@@ -22,12 +22,7 @@ static const CGFloat FADE_DELAY = 0.08;
         NSURL *pathURL = [NSURL fileURLWithPath : path];
 
         for (int x = 0; x < [numVoices intValue]; x++) {
-            NSError *error = NULL;
-            AVAudioPlayer *player = [[AVAudioPlayer alloc] initWithContentsOfURL:pathURL error: &error];
-            if (error) {
-                outError = error;
-                break;
-            }
+            AVAudioPlayer *player = [[AVAudioPlayer alloc] initWithContentsOfURL:pathURL error: &outError];
             player.volume = volume.floatValue;
             [player prepareToPlay];
             [voices addObject:player];
