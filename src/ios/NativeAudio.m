@@ -73,8 +73,7 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
 
 - (void) preloadSimple:(CDVInvokedUrlCommand *)command
 {
-    [self beginBackgroundUpdateTask];
-    NSString *callbackId = command.callbackId;
+        NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
     NSString *audioID = [arguments objectAtIndex:0];
     NSString *assetPath = [arguments objectAtIndex:1];
@@ -86,6 +85,7 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
     NSNumber* existingReference = audioMapping[audioID];
 
     [self.commandDelegate runInBackground:^{
+        [self beginBackgroundUpdateTask];
         if (existingReference == nil) {
 
             NSString* basePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"www"];
@@ -123,15 +123,12 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
             NSString *RESULT = [NSString stringWithFormat:@"%@ (%@)", ERROR_REFERENCE_EXISTS, audioID];
             [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: RESULT] callbackId:callbackId];
         }
-
+        [self endBackgroundUpdateTask];
     }];
-
-    [self endBackgroundUpdateTask];
 }
 
 - (void) preloadComplex:(CDVInvokedUrlCommand *)command
 {
-    [self beginBackgroundUpdateTask];
     NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
     NSString *audioID = [arguments objectAtIndex:0];
@@ -172,6 +169,7 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
     NSNumber* existingReference = audioMapping[audioID];
 
     [self.commandDelegate runInBackground:^{
+        [self beginBackgroundUpdateTask];
         if (existingReference == nil) {
             NSString* basePath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"www"];
             NSString* path = [NSString stringWithFormat:@"%@/%@", basePath, assetPath];
@@ -203,19 +201,19 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
             NSString *RESULT = [NSString stringWithFormat:@"%@ (%@)", ERROR_REFERENCE_EXISTS, audioID];
             [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: RESULT] callbackId:callbackId];
         }
+        [self endBackgroundUpdateTask];
 
     }];
-    [self endBackgroundUpdateTask];
 }
 
 - (void) play:(CDVInvokedUrlCommand *)command
 {
-    [self beginBackgroundUpdateTask];
     NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
     NSString *audioID = [arguments objectAtIndex:0];
 
     [self.commandDelegate runInBackground:^{
+        [self beginBackgroundUpdateTask];
         if (audioMapping) {
 
             NSObject* asset = audioMapping[audioID];
@@ -253,8 +251,9 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
             NSString *RESULT = [NSString stringWithFormat:@"%@ (%@)", ERROR_REFERENCE_MISSING, audioID];
             [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: RESULT] callbackId:callbackId];
         }
+
+        [self endBackgroundUpdateTask];
     }];
-    [self endBackgroundUpdateTask];
 }
 
 - (void) stop:(CDVInvokedUrlCommand *)command
@@ -263,10 +262,6 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
     NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
     NSString *audioID = [arguments objectAtIndex:0];
-
-    if (backgroundTaskId) {
-        [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskId];
-    }
 
     if ( audioMapping ) {
         NSObject* asset = audioMapping[audioID];
@@ -501,15 +496,14 @@ static void (mySystemSoundCompletionProc)(SystemSoundID ssID,void* clientData)
 
 - (void) beginBackgroundUpdateTask
 {
-    self.backgroundTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+    backgroundTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
         [self endBackgroundUpdateTask];
     }];
 }
 
 - (void) endBackgroundUpdateTask
 {
-    [[UIApplication sharedApplication] endBackgroundTask: self.backgroundTaskId];
-    self.backgroundTaskId = UIBackgroundTaskInvalid;
+    [[UIApplication sharedApplication] endBackgroundTask: backgroundTaskId];
 }
 
 @end
