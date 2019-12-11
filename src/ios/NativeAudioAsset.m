@@ -118,16 +118,15 @@ static const CGFloat FADE_DELAY = 0.08;
     }
 }
 
-- (BOOL) loop
+- (void) loop
 {
     [self stop];
     AVAudioPlayer * player = [voices objectAtIndex:playIndex];
     [player setCurrentTime:0.0];
     player.numberOfLoops = -1;
-    BOOL success = [player play];
+    [player play];
     playIndex += 1;
     playIndex = playIndex % [voices count];
-    return success;
 }
 
 - (void) unload

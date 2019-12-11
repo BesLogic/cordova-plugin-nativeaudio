@@ -316,8 +316,8 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
 
             if ([asset isKindOfClass:[NativeAudioAsset class]]) {
                 NativeAudioAsset *_asset = (NativeAudioAsset*) asset;
-                BOOL success = [_asset loop];
-                NSString *RESULT = [NSString stringWithFormat:@"%@ (%@) (%@)", INFO_PLAYBACK_LOOP, audioID, success];
+                [_asset loop];
+                NSString *RESULT = [NSString stringWithFormat:@"%@ (%@)", INFO_PLAYBACK_LOOP, audioID];
                 [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString: RESULT] callbackId:callbackId];
 
             } else if ( [asset isKindOfClass:[NSNumber class]] ) {
