@@ -29,6 +29,7 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
 
 - (void)pluginInitialize
 {
+    [self beginBackgroundUpdateTask];
     self.fadeMusic = NO;
 
     AudioSessionInitialize(NULL, NULL, nil , nil);
@@ -48,6 +49,7 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
 
     [session setActive: YES error: nil];
     [session setCategory:AVAudioSessionCategoryPlayback error:nil];
+    [self endBackgroundUpdateTask];
 }
 
 - (void) parseOptions:(NSDictionary*) options
@@ -71,7 +73,7 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
 
 - (void) preloadSimple:(CDVInvokedUrlCommand *)command
 {
-
+    [self beginBackgroundUpdateTask];
     NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
     NSString *audioID = [arguments objectAtIndex:0];
@@ -124,11 +126,12 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
 
     }];
 
-
+    [self endBackgroundUpdateTask];
 }
 
 - (void) preloadComplex:(CDVInvokedUrlCommand *)command
 {
+    [self beginBackgroundUpdateTask];
     NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
     NSString *audioID = [arguments objectAtIndex:0];
@@ -202,13 +205,12 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
         }
 
     }];
+    [self endBackgroundUpdateTask];
 }
 
 - (void) play:(CDVInvokedUrlCommand *)command
 {
-    backgroundTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-
-    }];
+    [self beginBackgroundUpdateTask];
     NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
     NSString *audioID = [arguments objectAtIndex:0];
@@ -252,10 +254,12 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
             [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: RESULT] callbackId:callbackId];
         }
     }];
+    [self endBackgroundUpdateTask];
 }
 
 - (void) stop:(CDVInvokedUrlCommand *)command
 {
+    [self beginBackgroundUpdateTask];
     NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
     NSString *audioID = [arguments objectAtIndex:0];
@@ -295,14 +299,14 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
         }
     } else {
         NSString *RESULT = [NSString stringWithFormat:@"%@ (%@)", ERROR_REFERENCE_MISSING, audioID];
-        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: RESULT] callbackId:callbackId];    }
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: RESULT] callbackId:callbackId];
+    }
+    [self endBackgroundUpdateTask];
 }
 
 - (void) loop:(CDVInvokedUrlCommand *)command
 {
-    backgroundTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-
-    }];
+    [self beginBackgroundUpdateTask];
 
     NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
@@ -336,11 +340,11 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
             [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: RESULT] callbackId:callbackId];
         };
     }
+    [self endBackgroundUpdateTask];
 }
 
 - (void) unload:(CDVInvokedUrlCommand *)command
 {
-
     NSString *callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
     NSString *audioID = [arguments objectAtIndex:0];
@@ -493,6 +497,19 @@ static void (mySystemSoundCompletionProc)(SystemSoundID ssID,void* clientData)
             [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: RESULT] callbackId:callbackId];
         }
     }];
+}
+
+- (void) beginBackgroundUpdateTask
+{
+    self.backgroundTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+        [self endBackgroundUpdateTask];
+    }];
+}
+
+- (void) endBackgroundUpdateTask
+{
+    [[UIApplication sharedApplication] endBackgroundTask: self.backgroundTaskId];
+    self.backgroundTaskId = UIBackgroundTaskInvalid;
 }
 
 @end
