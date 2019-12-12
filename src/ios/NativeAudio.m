@@ -48,7 +48,7 @@ static UIBackgroundTaskIdentifier backgroundTaskId;
     }
 
     [session setActive: YES error: nil];
-    [session setCategory:AVAudioSessionCategoryPlayback error:nil];
+    [session setCategory:AVAudioSessionCategoryPlayback withOptions:AVAudioSessionCategoryOptionMixWithOthers error:nil];
     [self endBackgroundUpdateTask];
 }
 
